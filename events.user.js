@@ -11,22 +11,28 @@
 
 'use strict';
 
-const stripesGradient = (colors, width, angle) => {
-  let gradient = `repeating-linear-gradient( ${angle}deg,`;
+const verticalBandColours = (colors) => {
+  let gradient = `linear-gradient( 90deg,`;
   let pos = 0;
+  const width = 100/colors.length
 
-  const colorCounts = colors.reduce((counts, color) => {
-    counts[color] = (counts[color] || 0) + 1;
-    return counts;
-  }, {});
 
-  colors.forEach((color, i) => {
-    colorCounts[color] -= 1;
-    color = chroma(color).darken(colorCounts[color]/3).css();
-
-    gradient += color + " " + pos + "px,";
+  colors.forEach((colorObj, i) => {
     pos += width;
-    gradient += color + " " + pos + "px,";
+    if (colorObj.bg) {
+      gradient += colorObj.bg + " 0%" + pos + "%,";
+    } else if (colorObj.bc) {
+      // if border set then zebra segment to simulate border and text
+      const colorBrighter = chroma(colorObj.bc).brighten().css();
+      const fifth = width/5
+      gradient += `${colorObj.bc} 0% ${pos - width + fifth}%,
+      ${colorBrighter} 0% ${pos - width + (2*fifth)}%,
+      ${colorObj.bc} 0% ${pos - width + (3*fifth)}%,
+      ${colorBrighter} 0% ${pos - width + (4*fifth)}%,
+      ${colorObj.bc} 0% ${pos}%,`;
+    } else {
+      gradient += colorObj.pbc + " 0%" + pos + "%,";
+    }
   });
   gradient = gradient.slice(0, -1);
   gradient += ")";
@@ -44,12 +50,15 @@ const calculatePosition = (event, parentPosition) => {
 }
 
 const mergeEventElements = (events) => {
-  events.sort((e1, e2) => dragType(e1) - dragType(e2));
-  const colors = events.map(event =>
-    event.style.backgroundColor || // Week day and full day events marked 'attending'
-    event.style.borderColor || // Not attending or not responded week view events
-    event.parentElement.style.borderColor // Timed month view events
-  );
+  // disabling this as it changes the orders of the events making clicking on the now transparent divs not be in the correct order
+  // events.sort((e1, e2) => dragType(e1) - dragType(e2));
+  const colors = events.map(event => {
+    return {
+      bg: event.style.backgroundColor, // Week day and full day events marked 'attending'
+      bc: event.style.borderColor, // Not attending or not responded week view events
+      pbc: event.parentElement.style.borderColor // Timed month view events
+    }
+  });
 
   const parentPosition = events[0].parentElement.getBoundingClientRect();
   const positions = events.map(event => {
@@ -58,8 +67,13 @@ const mergeEventElements = (events) => {
   });
 
   const eventToKeep = events.shift();
-  events.forEach(event => {
-    event.style.visibility = "hidden";
+
+  events.forEach((event,i,allEvents) => {
+    // making old events invisible (but still clickable)
+    // moving them into new positions that line up with gradiented colours
+    event.style.opacity = 0;
+    event.style.left = `calc((100% - 0px) * ${(i+1)/(allEvents.length+1)} + 0px)`;
+    event.style.width = `calc((100% - 0px) * ${1/(allEvents.length+1)}`;
   });
 
 
@@ -75,13 +89,13 @@ const mergeEventElements = (events) => {
       borderColor: eventToKeep.style.borderColor,
       textShadow: eventToKeep.style.textShadow,
     };
-    eventToKeep.style.backgroundImage = stripesGradient(colors, 10, 45);
+    eventToKeep.style.backgroundImage = verticalBandColours(colors);
     eventToKeep.style.backgroundSize = "initial";
     eventToKeep.style.left = Math.min.apply(Math, positions.map(s => s.left)) + 'px';
     eventToKeep.style.right = Math.min.apply(Math, positions.map(s => s.right)) + 'px';
     eventToKeep.style.visibility = "visible";
     eventToKeep.style.width = null;
-    eventToKeep.style.border = "solid 1px #FFF";
+    eventToKeep.style.color = '#fff';
 
     // Clear setting color for declined events
     eventToKeep.querySelector('[aria-hidden="true"]').style.color = null;
@@ -94,18 +108,18 @@ const mergeEventElements = (events) => {
     }
 
     events.forEach(event => {
-      event.style.visibility = "hidden";
+      event.style.opacity = 0;
     });
   } else {
     const dots = eventToKeep.querySelector('[role="button"] div:first-child');
     const dot = dots.querySelector('div');
-    dot.style.backgroundImage = stripesGradient(colors, 4, 90);
+    dot.style.backgroundImage = verticalBandColours(colors);
     dot.style.width = colors.length * 4 + 'px';
     dot.style.borderWidth = 0;
     dot.style.height = '8px';
 
     events.forEach(event => {
-      event.style.visibility = "hidden";
+      event.style.opacity = 0;
     });
   }
 }
@@ -115,7 +129,7 @@ const resetMergedEvents = (events) => {
     for (var k in event.originalStyle) {
       event.style[k] = event.originalStyle[k];
     }
-    event.style.visibility = "visible";
+    event.style.opacity = 0;
   });
 }
 
