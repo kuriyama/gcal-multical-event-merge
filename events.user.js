@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        Event Merge for Google Calendar™ (by @imightbeAmy)
+// @name        Event Merge for Google Calendar™ (by @HCAWN forked from @imightbeAmy)
 // @namespace   gcal-multical-event-merge
 // @include     https://www.google.com/calendar/*
 // @include     http://www.google.com/calendar/*
@@ -129,7 +129,7 @@ const resetMergedEvents = (events) => {
     for (var k in event.originalStyle) {
       event.style[k] = event.originalStyle[k];
     }
-    event.style.opacity = 0;
+    event.style.opacity = 1;
   });
 }
 
