@@ -6,8 +6,8 @@ Chrome extension that visually merges the same event on multiple Google Calendar
 Forked from [@imightbeamy's repo](https://github.com/imightbeamy/gcal-multical-event-merge)
 
 # Download
-## [for Chrome](https://chrome.google.com/webstore/detail/event-merge-for-google-ca/idehaflielbgpaokehlhidbjlehlfcep)
-## [for FireFox](https://addons.mozilla.org/en-US/firefox/addon/google-cal-event-merge/)
+## [for Chrome](https://chrome.google.com/webstore/detail/dchpdbljalbfnelbfbgncfidhjoibkah)
+[comment]: <> (## [for FireFox](https://addons.mozilla.org/en-US/firefox/addon/google-cal-event-merge/))
 ## [install with Greasemonkey](https://github.com/hcawn/gcal-multical-event-merge/raw/master/events.user.js)
 
 ![examples](images/examples.jpg)
