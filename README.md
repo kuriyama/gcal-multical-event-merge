@@ -3,15 +3,21 @@ Google Multi-Calendar Event Merge
 
 Chrome extension that visually merges the same event on multiple Google Calendars into one event.
 
-# Download [for Chrome](https://chrome.google.com/webstore/detail/event-merge-for-google-ca/idehaflielbgpaokehlhidbjlehlfcep), [for FireFox](https://addons.mozilla.org/en-US/firefox/addon/google-cal-event-merge/) or [install with Greasemonkey](https://github.com/imightbeamy/gcal-multical-event-merge/raw/master/events.user.js)
+Forked from [@imightbeamy's repo](https://github.com/imightbeamy/gcal-multical-event-merge)
 
-![examples](images/examples.png)
+# Download
+## [for Chrome](https://chrome.google.com/webstore/detail/event-merge-for-google-ca/idehaflielbgpaokehlhidbjlehlfcep)
+## [for FireFox](https://addons.mozilla.org/en-US/firefox/addon/google-cal-event-merge/)
+## [install with Greasemonkey](https://github.com/hcawn/gcal-multical-event-merge/raw/master/events.user.js)
 
-### Classic UI
+![examples](images/examples.jpg)
 
-For reference, [here's the last commit before changing to support the newer UI.](https://github.com/imightbeamy/gcal-multical-event-merge/blob/bed9a531157e14bf86463ea7970f8ce0ef76db1d/events.user.js)
+### Usage
 
+- Add extension to browser
+- Refresh Google calendar webpage
+- Toggle whole extension by pressing the extension icon
 
 ### Build
 
-Run `build` to create zip file for Chrome and FF.
+Run `build` or `build_windows` to create zip file for Chrome and FF.
