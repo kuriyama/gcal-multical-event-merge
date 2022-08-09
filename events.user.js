@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        Event Merge for Google Calendar™ (by @HCAWN forked from @imightbeAmy)
+// @name        Cal Merge for Google Calendar™ (by @HCAWN forked from @imightbeAmy)
 // @namespace   gcal-multical-event-merge
 // @include     https://www.google.com/calendar/*
 // @include     http://www.google.com/calendar/*
@@ -168,7 +168,7 @@ const init = (mutationsList) => {
 }
 
 setTimeout(() => chrome.storage.local.get('disabled', storage => {
-  console.log(`Event merge is ${storage.disabled ? 'disabled' : 'enabled'}`);
+  console.log(`Cal merge is ${storage.disabled ? 'disabled' : 'enabled'}`);
   if (!storage.disabled) {
     const observer = new MutationObserver(init);
     observer.observe(document.querySelector('body'), { childList: true, subtree: true, attributes: true });
