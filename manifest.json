@@ -19,11 +19,9 @@
     "https://www.google.com/calendar/*",
     "https://calendar.google.com/*"
   ],
-  "background": {
-    "service_worker": "background.js"
-  },
   "action": {
-    "default_title": "Toggle"
+    "default_title": "Toggle Cal Merge",
+    "default_popup": "index.html"
   },
   "icons": {
     "48": "icon.png"
