@@ -11,6 +11,30 @@
 
 'use strict';
 
+const stripesGradient = (new_colors, width, angle) => {
+  let gradient = `repeating-linear-gradient( ${angle}deg,`;
+  let pos = 0;
+
+  const colors = new_colors.map(c => c.bg || c.bc || c.pbc)
+
+  const colorCounts = colors.reduce((counts, color) => {
+    counts[color] = (counts[color] || 0) + 1;
+    return counts;
+  }, {});
+
+  colors.forEach((color, i) => {
+    colorCounts[color] -= 1;
+    color = chroma(color).darken(colorCounts[color]/3).css();
+
+    gradient += color + " " + pos + "px,";
+    pos += width;
+    gradient += color + " " + pos + "px,";
+  });
+  gradient = gradient.slice(0, -1);
+  gradient += ")";
+  return gradient;
+};
+
 const verticalBandColours = (colors) => {
   let gradient = `linear-gradient( 90deg,`;
   let pos = 0;
@@ -49,7 +73,9 @@ const calculatePosition = (event, parentPosition) => {
   }
 }
 
-const mergeEventElements = (events) => {
+const mergeEventElements = async (events) => {
+  const getCandycane = () => new Promise(res => chrome.storage.local.get('candycane', (s) => res(s.candycane)));
+  const candycane = await getCandycane()
   // disabling this as it changes the orders of the events making clicking on the now transparent divs not be in the correct order
   // events.sort((e1, e2) => dragType(e1) - dragType(e2));
   const colors = events.map(event => {
@@ -89,7 +115,7 @@ const mergeEventElements = (events) => {
       borderColor: eventToKeep.style.borderColor,
       textShadow: eventToKeep.style.textShadow,
     };
-    eventToKeep.style.backgroundImage = verticalBandColours(colors);
+    eventToKeep.style.backgroundImage = candycane ? stripesGradient(colors, 10, 45) : verticalBandColours(colors);
     eventToKeep.style.backgroundSize = "initial";
     eventToKeep.style.left = Math.min.apply(Math, positions.map(s => s.left)) + 'px';
     eventToKeep.style.right = Math.min.apply(Math, positions.map(s => s.right)) + 'px';
@@ -113,7 +139,7 @@ const mergeEventElements = (events) => {
   } else {
     const dots = eventToKeep.querySelector('[role="button"] div:first-child');
     const dot = dots.querySelector('div');
-    dot.style.backgroundImage = verticalBandColours(colors);
+    dot.style.backgroundImage = candycane ? stripesGradient(colors, 10, 45) : verticalBandColours(colors);
     dot.style.width = colors.length * 4 + 'px';
     dot.style.borderWidth = 0;
     dot.style.height = '8px';
@@ -174,5 +200,9 @@ setTimeout(() => chrome.storage.local.get('disabled', storage => {
     observer.observe(document.querySelector('body'), { childList: true, subtree: true, attributes: true });
   }
 
-  chrome.storage.onChanged.addListener(() => window.location.reload())
+  chrome.storage.onChanged.addListener(changes => {
+    if (changes.disabled) window.location.reload();
+    if (changes.candycane) window.location.reload();
+  });
+
 }), 10);
