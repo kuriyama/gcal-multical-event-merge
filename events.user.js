@@ -92,6 +92,14 @@ const mergeEventElements = async (events) => {
     return event.originalPosition;
   });
 
+  events.forEach((event,i) => {
+    // if top of all day event then handle
+    if (i === 0 && event.parentElement.style.top === '0em') {
+      event.parentElement.style.position = "absolute";
+      event.parentElement.style.width = "100%";
+    }
+  });
+
   const eventToKeep = events.shift();
 
   events.forEach((event,i,allEvents) => {
@@ -100,6 +108,11 @@ const mergeEventElements = async (events) => {
     event.style.opacity = 0;
     event.style.left = `calc((100% - 0px) * ${(i+1)/(allEvents.length+1)} + 0px)`;
     event.style.width = `calc((100% - 0px) * ${1/(allEvents.length+1)}`;
+    // if all day event, flex styling used so will have to override
+    if (!event.style.height) {
+      event.style.position = "absolute";
+      event.style.top = 0;
+    }
   });
 
 
@@ -109,7 +122,6 @@ const mergeEventElements = async (events) => {
       backgroundSize: eventToKeep.style.backgroundSize,
       left: eventToKeep.style.left,
       right: eventToKeep.style.right,
-      visibility: eventToKeep.style.visibility,
       width: eventToKeep.style.width,
       border: eventToKeep.style.border,
       borderColor: eventToKeep.style.borderColor,
@@ -119,18 +131,20 @@ const mergeEventElements = async (events) => {
     eventToKeep.style.backgroundSize = "initial";
     eventToKeep.style.left = Math.min.apply(Math, positions.map(s => s.left)) + 'px';
     eventToKeep.style.right = Math.min.apply(Math, positions.map(s => s.right)) + 'px';
-    eventToKeep.style.visibility = "visible";
     eventToKeep.style.width = null;
     eventToKeep.style.color = '#fff';
 
     // Clear setting color for declined events
     eventToKeep.querySelector('[aria-hidden="true"]').style.color = null;
 
-    const computedSpanStyle = window.getComputedStyle(eventToKeep.querySelector('span'));
-    if (computedSpanStyle.color == "rgb(255, 255, 255)") {
-      eventToKeep.style.textShadow = "0px 0px 2px black";
-    } else {
-      eventToKeep.style.textShadow = "0px 0px 2px white";
+    const span = eventToKeep.querySelector('span')
+    if (span) {
+      const computedSpanStyle = window.getComputedStyle(span);
+      if (computedSpanStyle?.color == "rgb(255, 255, 255)") {
+        eventToKeep.style.textShadow = "0px 0px 2px black";
+      } else {
+        eventToKeep.style.textShadow = "0px 0px 2px white";
+      }
     }
 
     events.forEach(event => {
@@ -139,10 +153,13 @@ const mergeEventElements = async (events) => {
   } else {
     const dots = eventToKeep.querySelector('[role="button"] div:first-child');
     const dot = dots.querySelector('div');
-    dot.style.backgroundImage = candycane ? stripesGradient(colors, 10, 45) : verticalBandColours(colors);
-    dot.style.width = colors.length * 4 + 'px';
-    dot.style.borderWidth = 0;
-    dot.style.height = '8px';
+    if (dot) {
+      dot.style.backgroundImage = candycane ? stripesGradient(colors, 10, 45) : verticalBandColours(colors);
+      dot.style.width = colors.length * 4 + 'px';
+      dot.style.borderWidth = 0;
+      dot.style.height = '8px';
+    }
+
 
     events.forEach(event => {
       event.style.opacity = 0;
@@ -155,7 +172,7 @@ const resetMergedEvents = (events) => {
     for (var k in event.originalStyle) {
       event.style[k] = event.originalStyle[k];
     }
-    event.style.opacity = 1;
+    // event.style.opacity = 1;
   });
 }
 
