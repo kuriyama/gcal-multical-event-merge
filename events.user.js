@@ -132,7 +132,8 @@ const mergeEventElements = async (events) => {
     eventToKeep.style.left = Math.min.apply(Math, positions.map(s => s.left)) + 'px';
     eventToKeep.style.right = Math.min.apply(Math, positions.map(s => s.right)) + 'px';
     eventToKeep.style.width = null;
-    eventToKeep.style.color = '#fff';
+    // leave default colour unless eventToKeep "would" be a coloured text event denoted by background colour not existing
+    if (!colors[0].bg) eventToKeep.style.color = '#fff';
 
     // Clear setting color for declined events
     eventToKeep.querySelector('[aria-hidden="true"]').style.color = null;
