@@ -11,7 +11,19 @@
 
 'use strict';
 
-const stripesGradient = (new_colors, width, angle) => {
+const smoothVerticalBandGradient = (new_colors) => {
+  let gradient = `linear-gradient( to right,`;
+  const colors = new_colors.map(c => c.bg || c.bc || c.pbc)
+
+  colors.forEach(color => {
+    gradient += color + ",";
+  });
+  gradient = gradient.slice(0, -1);
+  gradient += ")";
+  return gradient;
+};
+
+const candyCaneGradient = (new_colors, width, angle) => {
   let gradient = `repeating-linear-gradient( ${angle}deg,`;
   let pos = 0;
 
@@ -35,7 +47,7 @@ const stripesGradient = (new_colors, width, angle) => {
   return gradient;
 };
 
-const verticalBandColours = (colors) => {
+const verticalBandGradient = (colors) => {
   let gradient = `linear-gradient( 90deg,`;
   let pos = 0;
   const width = 100/colors.length
@@ -63,6 +75,19 @@ const verticalBandColours = (colors) => {
   return gradient;
 };
 
+const fillOptions = (colors,fill_style) => {
+  switch(fill_style) {
+    case "candy_cane":
+      return candyCaneGradient(colors, 10, 45)
+    case "vertical_bands":
+      return verticalBandGradient(colors)
+    case "smooth_vertical_bands":
+      return smoothVerticalBandGradient(colors)
+    default:
+      return verticalBandGradient(colors)
+  } 
+};
+
 const dragType = e => parseInt(e.dataset.dragsourceType);
 
 const calculatePosition = (event, parentPosition) => {
@@ -74,8 +99,8 @@ const calculatePosition = (event, parentPosition) => {
 }
 
 const mergeEventElements = async (events) => {
-  const getCandycane = () => new Promise(res => chrome.storage.local.get('candycane', (s) => res(s.candycane)));
-  const candycane = await getCandycane()
+  const getStyle = () => new Promise(res => chrome.storage.local.get('style', (s) => res(s.style)));
+  const fill_style = await getStyle()
   // disabling this as it changes the orders of the events making clicking on the now transparent divs not be in the correct order
   // events.sort((e1, e2) => dragType(e1) - dragType(e2));
   const colors = events.map(event => {
@@ -127,7 +152,7 @@ const mergeEventElements = async (events) => {
       borderColor: eventToKeep.style.borderColor,
       textShadow: eventToKeep.style.textShadow,
     };
-    eventToKeep.style.backgroundImage = candycane ? stripesGradient(colors, 10, 45) : verticalBandColours(colors);
+    eventToKeep.style.backgroundImage = fillOptions(colors,fill_style)
     eventToKeep.style.backgroundSize = "initial";
     eventToKeep.style.left = Math.min.apply(Math, positions.map(s => s.left)) + 'px';
     eventToKeep.style.right = Math.min.apply(Math, positions.map(s => s.right)) + 'px';
@@ -155,7 +180,7 @@ const mergeEventElements = async (events) => {
     const dots = eventToKeep.querySelector('[role="button"] div:first-child');
     const dot = dots.querySelector('div');
     if (dot) {
-      dot.style.backgroundImage = candycane ? stripesGradient(colors, 10, 45) : verticalBandColours(colors);
+      dot.style.backgroundImage = fillOptions(colors,fill_style);
       dot.style.width = colors.length * 4 + 'px';
       dot.style.borderWidth = 0;
       dot.style.height = '8px';
@@ -220,7 +245,7 @@ setTimeout(() => chrome.storage.local.get('disabled', storage => {
 
   chrome.storage.onChanged.addListener(changes => {
     if (changes.disabled) window.location.reload();
-    if (changes.candycane) window.location.reload();
+    if (changes.style) window.location.reload();
   });
 
 }), 10);
