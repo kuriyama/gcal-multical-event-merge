@@ -37,25 +37,35 @@
         .cell {
             display: table-cell;
         }
+        .right {
+            text-align: right;
+        }
+        .left {
+            text-align: left;
+        }
     </style>
     <body>
         <h1>Cal Merge for <br>Google Calendar<sup style="font-size: 50%;">TM</sup></h1>
         <h4>By <a href="https://github.com/hcawn/gcal-multical-event-merge/" target="_blank" >HCAWN</a></h4><h5>Forked from <a href="https://github.com/imightbeamy/gcal-multical-event-merge" target="_blank" >imightbeamy</a></h5>
         <div class="table" >
             <div class="row" >
-                <div class="cell" >
-                    Enable Calendar Merge
+                <div class="cell left" >
+                    Enable
                 </div>
-                <div class="cell" >
+                <div class="cell right" >
                     <input id="toggle_enabled" type="checkbox">
                 </div>
             </div>
             <div class="row" >
-                <div class="cell" >
-                    Old Candycane style
+                <div class="cell left" >
+                    Style
                 </div>
-                <div class="cell" >
-                    <input id="toggle_candycane" type="checkbox">
+                <div class="cell right" >
+                    <select id="select_style" >
+                        <option value="vertical_bands">Vertical bands (default)</option>
+                        <option value="candy_cane">Candy cane (old)</option>
+                        <option value="smooth_vertical_bands">Smooth vertical bands</option>
+                     </select>
                 </div>
             </div>
         </div>
