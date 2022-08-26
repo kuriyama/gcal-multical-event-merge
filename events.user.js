@@ -198,7 +198,6 @@ const resetMergedEvents = (events) => {
     for (var k in event.originalStyle) {
       event.style[k] = event.originalStyle[k];
     }
-    // event.style.opacity = 1;
   });
 }
 
@@ -213,21 +212,42 @@ const merge = (mainCalender) => {
         return;
       }
       let eventKey = Array.from(eventTitleEls).map(el => el.textContent).join('').replace(/\\s+/g,"");
-      eventKey = index + eventKey + event.style.height;
+      eventKey = index + '_' + eventKey + event.style.height;
       eventSets[eventKey] = eventSets[eventKey] || [];
       eventSets[eventKey].push(event);
     });
   });
 
-  Object.values(eventSets)
-    .forEach(events => {
+  let daysWithMergedEvents = [];
+
+  Object.entries(eventSets)
+    .forEach(eventSet => {
+      const index = eventSet[0].split('_')[0];
+      const events = eventSet[1];
       if (events.length > 1) {
+        const {length} = events;
         mergeEventElements(events);
+        daysWithMergedEvents.push({ 'index': index, 'amount': length });
       } else {
-        resetMergedEvents(events)
+        resetMergedEvents(events);
+        const day = daysWithMergedEvents.find(d => d.index === index);
+        if (day) {
+          moveOtherEvents(events, day.amount);
+        }
       }
     });
+
 }
+
+let otherEventsMoved = [];
+
+const moveOtherEvents = (events, amount) => {
+  if (!otherEventsMoved.includes(events[0])) {
+    const originalTop = events[0].parentElement.style.top;
+    events[0].parentElement.style.top = `${parseInt(originalTop) - (amount - 1)}em`;
+    otherEventsMoved.push(events[0]);
+  }
+};
 
 const init = (mutationsList) => {
   mutationsList && mutationsList
