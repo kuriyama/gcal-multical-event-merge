@@ -11,82 +11,82 @@
 
 'use strict';
 
-const smoothVerticalBandGradient = (new_colors) => {
-  let gradient = `linear-gradient( to right,`;
-  const colors = new_colors.map(c => c.bg || c.bc || c.pbc)
-
-  colors.forEach(color => {
-    gradient += color + ",";
-  });
-  gradient = gradient.slice(0, -1);
-  gradient += ")";
-  return gradient;
-};
-
-const candyCaneGradient = (new_colors, width, angle) => {
-  let gradient = `repeating-linear-gradient( ${angle}deg,`;
-  let pos = 0;
-
-  const colors = new_colors.map(c => c.bg || c.bc || c.pbc)
-
-  const colorCounts = colors.reduce((counts, color) => {
-    counts[color] = (counts[color] || 0) + 1;
-    return counts;
-  }, {});
-
-  colors.forEach((color, i) => {
-    colorCounts[color] -= 1;
-    color = chroma(color).darken(colorCounts[color]/3).css();
-
-    gradient += color + " " + pos + "px,";
-    pos += width;
-    gradient += color + " " + pos + "px,";
-  });
-  gradient = gradient.slice(0, -1);
-  gradient += ")";
-  return gradient;
-};
-
-const verticalBandGradient = (colors) => {
-  let gradient = `linear-gradient( 90deg,`;
-  let pos = 0;
-  const width = 100/colors.length
-
-
-  colors.forEach((colorObj, i) => {
-    pos += width;
-    if (colorObj.bg) {
-      gradient += colorObj.bg + " 0%" + pos + "%,";
-    } else if (colorObj.bc) {
-      // if border set then zebra segment to simulate border and text
-      const colorBrighter = chroma(colorObj.bc).brighten().css();
-      const fifth = width/5
-      gradient += `${colorObj.bc} 0% ${pos - width + fifth}%,
-      ${colorBrighter} 0% ${pos - width + (2*fifth)}%,
-      ${colorObj.bc} 0% ${pos - width + (3*fifth)}%,
-      ${colorBrighter} 0% ${pos - width + (4*fifth)}%,
-      ${colorObj.bc} 0% ${pos}%,`;
-    } else {
-      gradient += colorObj.pbc + " 0%" + pos + "%,";
-    }
-  });
-  gradient = gradient.slice(0, -1);
-  gradient += ")";
-  return gradient;
-};
-
-const fillOptions = (colors,fill_style) => {
-  switch(fill_style) {
-    case "candy_cane":
-      return candyCaneGradient(colors, 10, 45)
-    case "vertical_bands":
-      return verticalBandGradient(colors)
-    case "smooth_vertical_bands":
-      return smoothVerticalBandGradient(colors)
-    default:
-      return verticalBandGradient(colors)
-  } 
-};
+const fillOptions = {
+  candy_cane: (new_colors) => {
+    const width = 10
+    const angle = 45
+    let gradient = `repeating-linear-gradient( ${angle}deg,`;
+    let pos = 0;
+  
+    const colors = new_colors.map(c => c.bg || c.bc || c.pbc)
+  
+    const colorCounts = colors.reduce((counts, color) => {
+      counts[color] = (counts[color] || 0) + 1;
+      return counts;
+    }, {});
+  
+    colors.forEach((color, i) => {
+      colorCounts[color] -= 1;
+      color = chroma(color).darken(colorCounts[color]/3).css();
+  
+      gradient += color + ' ' + pos + 'px,';
+      pos += width;
+      gradient += color + ' ' + pos + 'px,';
+    });
+    gradient = gradient.slice(0, -1);
+    gradient += ')';
+    return gradient;
+  },
+  vertical_bands: (colors) => {
+    let gradient = `linear-gradient( 90deg,`;
+    let pos = 0;
+    const width = 100/colors.length
+  
+    colors.forEach((colorObj, i) => {
+      pos += width;
+      if (colorObj.bg) {
+        gradient += colorObj.bg + ' 0%' + pos + '%,';
+      } else if (colorObj.bc) {
+        // if border set then zebra segment to simulate border and text
+        const colorBrighter = chroma(colorObj.bc).brighten().css();
+        const fifth = width/5
+        gradient += `${colorObj.bc} 0% ${pos - width + fifth}%,
+        ${colorBrighter} 0% ${pos - width + (2*fifth)}%,
+        ${colorObj.bc} 0% ${pos - width + (3*fifth)}%,
+        ${colorBrighter} 0% ${pos - width + (4*fifth)}%,
+        ${colorObj.bc} 0% ${pos}%,`;
+      } else {
+        gradient += colorObj.pbc + ' 0%' + pos + '%,';
+      }
+    });
+    gradient = gradient.slice(0, -1);
+    gradient += ')';
+    return gradient;
+  },
+  smooth_vertical_bands: (new_colors) => {
+    let gradient = `linear-gradient( to right,`;
+    const colors = new_colors.map(c => c.bg || c.bc || c.pbc)
+  
+    colors.forEach(color => {
+      gradient += color + ',';
+    });
+    gradient = gradient.slice(0, -1);
+    gradient += ')';
+    return gradient;
+  },
+  vertical_bands_fade_merge: (new_colors) => {
+    let gradient = `linear-gradient( to right,`;
+    const colors = new_colors.map(c => c.bg || c.bc || c.pbc)
+  
+    colors.forEach(color => {
+      // each colour spreads more (hack, but this extension isn't exactly meant to be optimised)
+      gradient += color + ',' + color + ',' + color + ',';
+    });
+    gradient = gradient.slice(0, -1);
+    gradient += ')';
+    return gradient;
+  }
+}
 
 const dragType = e => parseInt(e.dataset.dragsourceType);
 
@@ -120,8 +120,8 @@ const mergeEventElements = async (events) => {
   events.forEach((event,i) => {
     // if top of all day event then handle
     if (i === 0 && event.parentElement.style.top === '0em') {
-      event.parentElement.style.position = "absolute";
-      event.parentElement.style.width = "100%";
+      event.parentElement.style.position = 'absolute';
+      event.parentElement.style.width = '100%';
     }
   });
 
@@ -135,7 +135,7 @@ const mergeEventElements = async (events) => {
     event.style.width = `calc((100% - 0px) * ${1/(allEvents.length+1)}`;
     // if all day event, flex styling used so will have to override
     if (!event.style.height) {
-      event.style.position = "absolute";
+      event.style.position = 'absolute';
       event.style.top = 0;
     }
   });
@@ -152,12 +152,12 @@ const mergeEventElements = async (events) => {
       borderColor: eventToKeep.style.borderColor,
       textShadow: eventToKeep.style.textShadow,
     };
-    eventToKeep.style.backgroundImage = fillOptions(colors,fill_style)
-    eventToKeep.style.backgroundSize = "initial";
+    eventToKeep.style.backgroundImage = fillOptions[fill_style](colors)
+    eventToKeep.style.backgroundSize = 'initial';
     eventToKeep.style.left = Math.min.apply(Math, positions.map(s => s.left)) + 'px';
     eventToKeep.style.right = Math.min.apply(Math, positions.map(s => s.right)) + 'px';
     eventToKeep.style.width = null;
-    // leave default colour unless eventToKeep "would" be a coloured text event denoted by background colour not existing
+    // leave default colour unless eventToKeep 'would' be a coloured text event denoted by background colour not existing
     if (!colors[0].bg) eventToKeep.style.color = '#fff';
 
     // Clear setting color for declined events
@@ -166,10 +166,10 @@ const mergeEventElements = async (events) => {
     const span = eventToKeep.querySelector('span')
     if (span) {
       const computedSpanStyle = window.getComputedStyle(span);
-      if (computedSpanStyle?.color == "rgb(255, 255, 255)") {
-        eventToKeep.style.textShadow = "0px 0px 2px black";
+      if (computedSpanStyle?.color == 'rgb(255, 255, 255)') {
+        eventToKeep.style.textShadow = '0px 0px 2px black';
       } else {
-        eventToKeep.style.textShadow = "0px 0px 2px white";
+        eventToKeep.style.textShadow = '0px 0px 2px white';
       }
     }
 
@@ -198,41 +198,61 @@ const resetMergedEvents = (events) => {
     for (var k in event.originalStyle) {
       event.style[k] = event.originalStyle[k];
     }
-    // event.style.opacity = 1;
   });
 }
 
 const merge = (mainCalender) => {
   const eventSets = {};
-  const days = mainCalender.querySelectorAll("[role=\"gridcell\"]");
+  const days = mainCalender.querySelectorAll('[role="gridcell"]');
   days.forEach((day, index) => {
-    const events = Array.from(day.querySelectorAll("[data-eventid][role=\"button\"], [data-eventid] [role=\"button\"]"));
+    const events = Array.from(day.querySelectorAll('[data-eventid][role="button"], [data-eventid] [role="button"]'));
     events.forEach(event => {
       const eventTitleEls = event.querySelectorAll('[aria-hidden="true"]');
       if (!eventTitleEls.length) {
         return;
       }
-      let eventKey = Array.from(eventTitleEls).map(el => el.textContent).join('').replace(/\\s+/g,"");
-      eventKey = index + eventKey + event.style.height;
+      let eventKey = Array.from(eventTitleEls).map(el => el.textContent).join('').replace(/\\s+/g,'');
+      eventKey = index + '_' + eventKey + event.style.height;
       eventSets[eventKey] = eventSets[eventKey] || [];
       eventSets[eventKey].push(event);
     });
   });
 
-  Object.values(eventSets)
-    .forEach(events => {
+  let daysWithMergedEvents = [];
+
+  Object.entries(eventSets)
+    .forEach(eventSet => {
+      const index = eventSet[0].split('_')[0];
+      const events = eventSet[1];
       if (events.length > 1) {
+        const {length} = events;
         mergeEventElements(events);
+        daysWithMergedEvents.push({ 'index': index, 'amount': length });
       } else {
-        resetMergedEvents(events)
+        resetMergedEvents(events);
+        const day = daysWithMergedEvents.find(d => d.index === index);
+        if (day) {
+          moveOtherEvents(events, day.amount);
+        }
       }
     });
+
 }
+
+let otherEventsMoved = [];
+
+const moveOtherEvents = (events, amount) => {
+  if (!otherEventsMoved.includes(events[0])) {
+    const originalTop = events[0].parentElement.style.top;
+    events[0].parentElement.style.top = `${parseInt(originalTop) - (amount - 1)}em`;
+    otherEventsMoved.push(events[0]);
+  }
+};
 
 const init = (mutationsList) => {
   mutationsList && mutationsList
     .map(mutation => mutation.addedNodes[0] || mutation.target)
-    .filter(node => node.matches && node.matches("[role=\"main\"], [role=\"dialog\"], [role=\"grid\"]"))
+    .filter(node => node.matches && node.matches('[role="main"], [role="dialog"], [role="grid"]'))
     .map(merge);
 }
 
