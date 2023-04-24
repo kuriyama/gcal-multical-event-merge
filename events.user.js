@@ -95,6 +95,7 @@ const calculatePosition = (event, parentPosition) => {
   return {
     left: Math.max(eventPosition.left - parentPosition.left, 0),
     right: parentPosition.right - eventPosition.right,
+    parentWidth: parentPosition.width
   }
 }
 
@@ -125,14 +126,22 @@ const mergeEventElements = async (events) => {
     }
   });
 
+  // section to account for multiple events at the same time
+  // of the original events, find the position they occupy relative to parent
+  // leftPercent and widthPercent are then used to position each event for clicking
+  const leftMost = Math.min(...positions.map(p => p.left));
+  const rightMost = Math.min(...positions.map(p => p.right));
+  const leftPercent = leftMost/positions[0].parentWidth * 100;
+  const widthPercent = (positions[0].parentWidth - leftMost - rightMost)/positions[0].parentWidth * 100;
+
   const eventToKeep = events.shift();
 
   events.forEach((event,i,allEvents) => {
     // making old events invisible (but still clickable)
     // moving them into new positions that line up with gradiented colours
     event.style.opacity = 0;
-    event.style.left = `calc((100% - 0px) * ${(i+1)/(allEvents.length+1)} + 0px)`;
-    event.style.width = `calc((100% - 0px) * ${1/(allEvents.length+1)}`;
+    event.style.left = `calc(${leftPercent}% + ((${widthPercent}% - 0px) * ${(i+1)/(allEvents.length+1)} + 0px))`;
+    event.style.width = `calc((${widthPercent}% - 0px) * ${1/(allEvents.length+1)}`;
     // if all day event, flex styling used so will have to override
     if (!event.style.height) {
       event.style.position = 'absolute';
