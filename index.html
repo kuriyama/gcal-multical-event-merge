@@ -25,6 +25,9 @@
         input {
             cursor: pointer;
         }
+        input[type="text"] {
+            cursor: text;
+        }
         .table {
             display: table;
             width: 100%;
@@ -74,8 +77,15 @@
                         <option value="candy_cane">Candy cane (old)</option>
                         <option value="smooth_vertical_bands">Smooth vertical bands</option>
                         <option value="vertical_bands_fade_merge">Fuzzy vertical bands</option>
-                        
-                     </select>
+                    </select>
+                </div>
+            </div>
+            <div class="row" >
+                <div class="cell left" title="An event with this word in the title will match with any other title.&#10;'busy' is a common use case for this feature.&#10;Clear the textbox if you are getting undesirable results" >
+                    Wildcard
+                </div>
+                <div class="cell right" >
+                    <input id="wildcard_value" style="width: 150px;" type="text" placeholder="wildcard" value="busy">
                 </div>
             </div>
         </div>
