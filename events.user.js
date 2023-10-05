@@ -210,7 +210,23 @@ const resetMergedEvents = (events) => {
   });
 }
 
-const merge = (mainCalender) => {
+function findMatchingString(eventSets, string_1, wildcard) {
+  const [prefix, suffix] = string_1.split(wildcard);
+  const regexPattern = new RegExp(`${prefix}.*${suffix}`);
+  const array = Object.keys(eventSets);
+
+  for (const str of array) {
+      if (str.match(regexPattern)) {
+        return str;
+    }
+  }
+
+  return null;
+}
+
+const merge = async (mainCalender) => {
+  const getWildcard = () => new Promise(res => chrome.storage.local.get('wildcard', (s) => res(s.wildcard)));
+  const wildcard = await getWildcard()
   const eventSets = {};
   const days = mainCalender.querySelectorAll('[role="gridcell"]');
   days.forEach((day, index) => {
@@ -222,8 +238,16 @@ const merge = (mainCalender) => {
       }
       let eventKey = Array.from(eventTitleEls).map(el => el.textContent).join('').replace(/\\s+/g,'');
       eventKey = index + '_' + eventKey + event.style.height;
-      eventSets[eventKey] = eventSets[eventKey] || [];
-      eventSets[eventKey].push(event);
+      const busy_match_to_existing_key = wildcard ? findMatchingString(eventSets, eventKey, wildcard) : null;
+      // if the busy event is a match to an existing key, then add it to that key
+      // rather than creating a new key
+      if (busy_match_to_existing_key) {
+        eventSets[busy_match_to_existing_key].push(event);
+      } else {
+        eventSets[eventKey] = eventSets[eventKey] || [];
+        eventSets[eventKey].push(event);
+      }
+
     });
   });
 
@@ -275,6 +299,7 @@ setTimeout(() => chrome.storage.local.get('disabled', storage => {
   chrome.storage.onChanged.addListener(changes => {
     if (changes.disabled) window.location.reload();
     if (changes.style) window.location.reload();
+    if (changes.wildcard) window.location.reload();
   });
 
 }), 10);
