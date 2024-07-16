@@ -219,12 +219,20 @@ const resetMergedEvents = events => {
 }
 
 function findMatchingString(eventSets, string_1, wildcard) {
-    const [prefix, suffix] = string_1.split(wildcard)
-    const regexPattern = new RegExp(`${prefix}.*${suffix}`)
+    const stripped_wildcard = wildcard.replace(/^\/|\/$/g, "") // Remove leading and trailing slashes if there are any
+    const user_regex_pattern = new RegExp(stripped_wildcard, "i") // Make it case insensitive
+
+    // Escape special characters in the input string
+    const escapeRegExp = string => string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    const escaped_string_1 = escapeRegExp(string_1)
+
+    // Replace the wildcard pattern with a regex wildcard (.*)
+    const regex_pattern = escaped_string_1.replace(user_regex_pattern, ".*")
+
     const array = Object.keys(eventSets)
 
     for (const str of array) {
-        if (str.match(regexPattern)) {
+        if (str.match(new RegExp(regex_pattern, "i"))) {
             return str
         }
     }
@@ -249,11 +257,11 @@ const merge = async mainCalender => {
                 .join("")
                 .replace(/\\s+/g, "")
             eventKey = index + "_" + eventKey + event.style.height
-            const busy_match_to_existing_key = wildcard ? findMatchingString(eventSets, eventKey, wildcard) : null
-            // if the busy event is a match to an existing key, then add it to that key
+            const wildcard_match_to_existing_key = wildcard ? findMatchingString(eventSets, eventKey, wildcard) : null
+            // if the wildcard event is a match to an existing key, then add it to that key
             // rather than creating a new key
-            if (busy_match_to_existing_key) {
-                eventSets[busy_match_to_existing_key].push(event)
+            if (wildcard_match_to_existing_key) {
+                eventSets[wildcard_match_to_existing_key].push(event)
             } else {
                 eventSets[eventKey] = eventSets[eventKey] || []
                 eventSets[eventKey].push(event)
