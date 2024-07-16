@@ -274,26 +274,29 @@ const merge = async mainCalender => {
     Object.entries(eventSets).forEach(eventSet => {
         const index = eventSet[0].split("_")[0]
         const events = eventSet[1]
+        // make sure this day appears in the daysWithMergedEvents array
+        if (!daysWithMergedEvents.find(d => d.index === index)) {
+            daysWithMergedEvents.push({ index: index, amount: 0 })
+        }
+        // get the current count for this day to use as top position of events
+        const current_count_for_day = daysWithMergedEvents.find(d => d.index === index).amount
+
         if (events.length > 1) {
-            const { length } = events
             mergeEventElements(events)
-            daysWithMergedEvents.push({ index: index, amount: length })
         } else {
             resetMergedEvents(events)
-            const day = daysWithMergedEvents.find(d => d.index === index)
-            if (day) {
-                moveOtherEvents(events, day.amount)
-            }
         }
+        moveEvents(events, current_count_for_day)
+        // add to the count
+        daysWithMergedEvents.find(d => d.index === index).amount += 1
     })
 }
 
 let otherEventsMoved = []
 
-const moveOtherEvents = (events, amount) => {
+const moveEvents = (events, from_top) => {
     if (!otherEventsMoved.includes(events[0])) {
-        const originalTop = events[0].parentElement.style.top
-        events[0].parentElement.style.top = `${parseInt(originalTop) - (amount - 1)}em`
+        events[0].parentElement.style.top = `${from_top}em`
         otherEventsMoved.push(events[0])
     }
 }
