@@ -123,8 +123,9 @@ const mergeEventElements = async events => {
     events.forEach((event, i) => {
         // if top of all day event then handle
         if (i === 0 && event.parentElement.style.top === "0em") {
-            event.parentElement.style.position = "absolute"
-            event.parentElement.style.width = "100%"
+            // TODO Why did I add this in the first place? Looks like it just caused problems
+            // event.parentElement.style.position = "absolute"
+            // event.parentElement.style.width = "100%"
         }
     })
 
