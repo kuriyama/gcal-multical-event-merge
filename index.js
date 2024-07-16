@@ -18,7 +18,7 @@ window.onload = function () {
         element.checked = value
     }
 
-    const setWildcard = (id, value) => {
+    const setText = (id, value) => {
         let element = document.getElementById(id);
         element.value = value
     }
@@ -43,7 +43,7 @@ window.onload = function () {
             value = 'busy'
             chrome.storage.local.set({ 'wildcard': value });
         }
-        setWildcard('wildcard_value',value)
+        setText('wildcard_value',value)
     });
 
     const manifest_data = chrome.runtime.getManifest();
