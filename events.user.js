@@ -199,7 +199,7 @@ const mergeEventElements = async events => {
         const dots = eventToKeep.querySelector('[role="button"] div:first-child')
         const dot = dots.querySelector("div")
         if (dot) {
-            dot.style.backgroundImage = fillOptions(colors, fill_style)
+            dot.style.backgroundImage = fillOptions[fill_style](colors)
             dot.style.width = colors.length * 4 + "px"
             dot.style.borderWidth = 0
             dot.style.height = "8px"
@@ -242,8 +242,23 @@ function findMatchingString(eventSets, string_1, wildcard) {
 }
 
 const merge = async mainCalender => {
-    const getWildcard = () => new Promise(res => chrome.storage.local.get("wildcard", s => res(s.wildcard)))
-    const wildcard = await getWildcard()
+    const getWildcard = () =>
+        new Promise((res, rej) => {
+            chrome.storage.local.get("wildcard", s => {
+                if (chrome.runtime.lastError) {
+                    rej(chrome.runtime.lastError)
+                } else {
+                    res(s.wildcard)
+                }
+            })
+        })
+
+    let wildcard
+    try {
+        wildcard = await getWildcard()
+    } catch (error) {
+        wildcard = ""
+    }
     const eventSets = {}
     const days = mainCalender.querySelectorAll('[role="gridcell"]')
     days.forEach((day, index) => {
@@ -297,6 +312,10 @@ let otherEventsMoved = []
 
 const moveEvents = (events, from_top) => {
     if (!otherEventsMoved.includes(events[0])) {
+        // if parent has roll = "presentation" then do not move as it is a day column
+        if (events[0].parentElement.getAttribute("role") === "presentation") {
+            return
+        }
         events[0].parentElement.style.top = `${from_top}em`
         otherEventsMoved.push(events[0])
     }
