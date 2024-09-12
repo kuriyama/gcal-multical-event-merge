@@ -227,8 +227,15 @@ function findMatchingString(eventSets, string_1, wildcard) {
     const escapeRegExp = string => string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
     const escaped_string_1 = escapeRegExp(string_1)
 
-    // Replace the wildcard pattern with a regex wildcard (.*)
-    const regex_pattern = escaped_string_1.replace(user_regex_pattern, ".*")
+    // Split the wildcard by '|' to support multiple conditions (OR)
+    const split_wildcards = stripped_wildcard.split("|")
+    let regex_pattern = escaped_string_1
+
+    // Replace each wildcard in the escaped string with the wildcard regex
+    split_wildcards.forEach(pattern => {
+        const temp_pattern = new RegExp(escapeRegExp(pattern), "i")
+        regex_pattern = regex_pattern.replace(temp_pattern, ".*")
+    })
 
     const array = Object.keys(eventSets)
 
