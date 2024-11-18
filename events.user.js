@@ -240,7 +240,7 @@ function findMatchingString(eventSets, string_1, wildcard) {
     const array = Object.keys(eventSets)
 
     for (const str of array) {
-        if (str.match(new RegExp(regex_pattern, "i"))) {
+        if (str.match(new RegExp(`^${regex_pattern}\$`, "i"))) {
             return str
         }
     }
